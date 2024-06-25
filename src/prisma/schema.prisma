@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN // The application admin
+  USER // The application user
+
+  @@map("roles")
+}
+
+enum VerificationStatus {
+  VERIFIED
+  PENDING
+  UNVERIFIED
+
+  @@map("verification_status")
+}
+
+enum PasswordResetStatus {
+  PENDING
+  IDLE
+
+  @@map("password_reset_status")
+}
+
+model User {
+  id                   String              @id @default(uuid())
+  names                String
+  email                String              @unique
+  telephone            String?
+  password             String
+  profilePicture       File?               @relation(fields: [profilePictureId], references: [id])
+  profilePictureId     String?             @map("profile_picture_id")
+  role                 Role
+  verificationStatus   VerificationStatus  @default(UNVERIFIED) @map("verification_status")
+  verificationCode     String?             @map("verification_code")
+  verificationExpires  DateTime?           @map("verification_expires")
+  passwordResetStatus  PasswordResetStatus @default(IDLE) @map("password_reset_status")
+  passwordResetCode    String?             @map("password_reset_code")
+  passwordResetExpires DateTime?           @map("password_reset_expires")
+  createdAt            DateTime            @default(now()) @map("created_at")
+  updatedAt            DateTime            @updatedAt @map("updated_at")
+  companyId            String?
+
+  @@map("users")
+}
+
+model File {
+  id           String   @id @default(uuid())
+  name         String
+  originalName String   @map("original_name")
+  url          String
+  folder       String
+  type         String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  users        User[]
+
+  @@map("files")
+}
